@@ -239,7 +239,10 @@ class NeuralNetwork:
             nl_transform: ArrayLike
                 Activation function output.
         """
-        pass
+
+        # calculate sigmoid with Z
+        nl_transform = 1 / (1 + np.exp(-Z))
+        return nl_transform
 
     def _relu(self, Z: ArrayLike) -> ArrayLike:
         """
@@ -253,7 +256,9 @@ class NeuralNetwork:
             nl_transform: ArrayLike
                 Activation function output.
         """
-        pass
+        # reLu is max of 0 and input
+        nl_transform = np.maximum(0, Z)
+        return nl_transform
 
     def _sigmoid_backprop(self, dA: ArrayLike, Z: ArrayLike):
         """
@@ -269,7 +274,15 @@ class NeuralNetwork:
             dZ: ArrayLike
                 Partial derivative of current layer Z matrix.
         """
-        pass
+
+
+        # Chain Rule
+        # dA = dL/dA; 
+        # dL/dZ = dL/dA * dA/dZ (deriv of sigmoid wrt Z)
+        dZ = dA * self._sigmoid(Z) * (1 - self._sigmoid(Z))
+
+        return dZ
+        
 
     def _relu_backprop(self, dA: ArrayLike, Z: ArrayLike) -> ArrayLike:
         """
@@ -285,7 +298,12 @@ class NeuralNetwork:
             dZ: ArrayLike
                 Partial derivative of current layer Z matrix.
         """
-        pass
+        
+        # apply relu to Z, establish boundaries for <0 and 1
+        Z = np.where(Z<0, 0, 1)
+        dZ = Z * dA # dL/dA = dA, dA/dZ = Z rectified
+        return dZ
+
 
     def _binary_cross_entropy(self, y: ArrayLike, y_hat: ArrayLike) -> float:
         """
@@ -301,7 +319,9 @@ class NeuralNetwork:
             loss: float
                 Average loss over mini-batch.
         """
-        pass
+        # loss function
+        loss = -np.mean((y * np.log(y_hat)) + ((1 - y) * (np.log(1 - y_hat))))
+        return loss
 
     def _binary_cross_entropy_backprop(self, y: ArrayLike, y_hat: ArrayLike) -> ArrayLike:
         """
@@ -317,7 +337,13 @@ class NeuralNetwork:
             dA: ArrayLike
                 partial derivative of loss with respect to A matrix.
         """
-        pass
+        # total number of terms in y
+        y_length = y.shape[0]
+
+        # deriv of loss wrt y hat
+        dA = (((1 - y)/(1 - y_hat)) - (y/y_hat)) / y_length
+        return dA
+
 
     def _mean_squared_error(self, y: ArrayLike, y_hat: ArrayLike) -> float:
         """
@@ -333,7 +359,11 @@ class NeuralNetwork:
             loss: float
                 Average loss of mini-batch.
         """
-        pass
+        # mse: (observed - predicted) - squared
+        # and average of these
+        loss = np.mean((y - y_hat) ** 2)
+        return loss
+
 
     def _mean_squared_error_backprop(self, y: ArrayLike, y_hat: ArrayLike) -> ArrayLike:
         """
@@ -349,8 +379,13 @@ class NeuralNetwork:
             dA: ArrayLike
                 partial derivative of loss with respect to A matrix.
         """
-        pass
+        # not sure
+        y_length = y.shape[0]
+        dA = -2 * (y - y_hat) / y_length
+        return dA
 
+
+    # do I need these? we either use bin cross-entropy or mse?
     def _loss_function(self, y: ArrayLike, y_hat: ArrayLike) -> float:
         """
         Loss function, computes loss given y_hat and y. This function is
