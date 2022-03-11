@@ -11,14 +11,19 @@ from nn import NeuralNetwork
 
 def test_forward():
     nn_ = NeuralNetwork(nn_arch = [{"input_dim": 3, "output_dim": 2, "activation": "relu"},
-                                   {"input_dim": 2, "output_dim": 1, "activation": "relu"}])
+                                   {"input_dim": 2, "output_dim": 1, "activation": "relu"}],
+                                   lr = 0.01,
+                                   seed = 40,
+                                   batch_size = 1,
+                                   epochs = 1,
+                                   loss_function = 'mse')
 
     # establish weights and biases
-    forward_params = {'W1': np.array([1, 2, 3], [2, 3, 1]),
+    forward_params = {'W1': np.array([[1, 2, 3], [2, 3, 1]]),
                       'b1': np.array([[1], [1]]),
                       'W2': np.array([[2, 2]]),
                       'b2': np.array([[1]])}
-    nn_._set_params_for_test(forward_params)
+   
 
     # your prev layer, or input
     Aprev = np.array([1, 2, 1])
@@ -34,7 +39,7 @@ def test_forward():
     assert np.array_equal(cash['A2'], np.array([[39]]))
     assert np.array_equal(cash['Z2'], np.array([[39]]))
     assert result == expected_result
-    
+
 
 def test_single_forward():
     pass

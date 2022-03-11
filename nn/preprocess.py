@@ -53,9 +53,7 @@ def one_hot_encode_seqs(seq_arr: List[str]) -> ArrayLike:
     return np.array(encodings)
 
 
-def sample_seqs(
-        seqs: List[str]
-        labels: List[bool]) -> Tuple[List[seq], List[bool]]:
+def sample_seqs(seqs: List[str], labels: List[bool]) -> Tuple[List[str], List[bool]]:
     """
     This function should sample your sequences to account for class imbalance. 
     Consider this as a sampling scheme with replacement.

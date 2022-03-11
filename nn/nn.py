@@ -353,7 +353,7 @@ class NeuralNetwork:
             for X, y in zip(X_batch, y_batch):
 
                 # get y_hat
-                out, cache = self.forward(X):
+                out, cache = self.forward(X)
 
                 # done with forward, calculate loss
                 if self._loss_func == 'mse':
