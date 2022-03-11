@@ -293,9 +293,10 @@ class NeuralNetwork:
             idxLayer = i + 1
 
             # changing weight parameters appropriately -neg lr * gradient dict value of dW and db
-            self._param_dict['W' + str(idxLayer)] -= self._lr * grad_dict['dW' + str(idxLayer)]
+            self._param_dict['W' + str(idxLayer)] = self._param_dict['W' + str(idxLayer)] - self._lr * grad_dict['dW' + str(idxLayer)]
+            
             # same as above, but updating biases
-            self._param_dict['b' + str(idxLayer)] -=self._lr * grad_dict['db' + str(idxLayer)]
+            self._param_dict['b' + str(idxLayer)] = self._param_dict['b' + str(idxLayer)] - self._lr * grad_dict['db' + str(idxLayer)]
 
         return None
 
@@ -330,7 +331,7 @@ class NeuralNetwork:
         per_epoch_loss_val = []
 
         # iterate num epochs of times
-        for e in range(epochs):
+        for e in range(self._epochs):
 
             # combine both X and y train to shuffle -- good practice
             shuffle_inputs = np.concatenate([X_train, y_train], axis=1)

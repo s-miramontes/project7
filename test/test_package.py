@@ -112,7 +112,38 @@ def test_single_backprop():
 
 
 def test_predict():
-    pass
+    # again, network
+    nn_ = NeuralNetwork(nn_arch = [{"input_dim": 3, "output_dim": 2, "activation": "relu"},
+                                   {"input_dim": 2, "output_dim": 1, "activation": "relu"}],
+                                   lr = 0.01,
+                                   seed = 40,
+                                   batch_size = 1,
+                                   epochs = 1,
+                                   loss_function = 'mse')
+
+    # and the same parameters as the forward func
+    nn_._param_dict = {'W1': np.array([[1, 2, 3], [2, 3, 1]]),
+                      'b1': np.array([[1], [1]]),
+                      'W2': np.array([[2, 2]]),
+                      'b2': np.array([[1]])}
+
+    # now make up a training dataset 
+    X_train = np.array([[1, 2, 3]])
+    Y_train = np.array([[1]])
+
+    # now make up at val dataset, same one actually
+    X_val = np.array([[1, 2, 3]])
+    Y_val = np.array([[1]])
+
+    # use fit func
+    epochLoss_train, epochLoss_val = nn_.fit(X_train, Y_train, X_val, Y_val)
+    # get predictions, since we know what to expect
+    pred = nn_.predict(X_train)
+
+    actual = np.array([[0.46]])
+
+    #rounding bc python has invisible digits
+    assert (np.array_equal(np.round(pred,1), np.round(actual, 1)))
 
 
 def test_binary_cross_entropy():
