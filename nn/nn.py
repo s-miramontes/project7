@@ -110,7 +110,7 @@ class NeuralNetwork:
         # Apply chose activation functions
         if activation =="relu":
             # ReLu on Z_curr
-            A_curr = self._reul(Z_curr)
+            A_curr = self._relu(Z_curr)
 
         elif activation == 'sigmoid':
             # sigmoid on Z_curr

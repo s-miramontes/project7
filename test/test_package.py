@@ -19,7 +19,7 @@ def test_forward():
                                    loss_function = 'mse')
 
     # establish weights and biases
-    forward_params = {'W1': np.array([[1, 2, 3], [2, 3, 1]]),
+    nn_._param_dict = {'W1': np.array([[1, 2, 3], [2, 3, 1]]),
                       'b1': np.array([[1], [1]]),
                       'W2': np.array([[2, 2]]),
                       'b2': np.array([[1]])}
