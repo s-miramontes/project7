@@ -206,13 +206,13 @@ class NeuralNetwork:
         # backpropagation according to activation function
         # dZ_curr: deriv of activation function applied to Z_curr
         if activation_curr == 'relu':
-            dZ_curr = self._relu_backprop(Z_curr)
+            dZ_curr = self._relu_backprop(dA_curr, Z_curr)
         elif activation_curr == 'sigmoid':
-            dZ_curr = self._sigmoid_backprop(Z_curr)
+            dZ_curr = self._sigmoid_backprop(dA_curr, Z_curr)
 
-        # notes here
-        dA_prev = np.dot(W_curr.T, dZ_curr)
-        dW_curr = np.dot(dZ_curr, A_prev.T) / A_dims
+        # partial derivs all the way to the front
+        dA_prev = np.dot(dZ_curr, W_curr)
+        dW_curr = np.dot(dZ_curr.T, A_prev)
         db_curr = np.sum(dZ_curr, axis = 1, keepdims = True) / A_dims
 
         return dA_prev, dW_curr, db_curr

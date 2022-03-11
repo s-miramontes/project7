@@ -71,7 +71,44 @@ def test_single_forward():
 
 
 def test_single_backprop():
-    pass
+    
+    # recycling network
+    nn_ = NeuralNetwork(nn_arch = [{"input_dim": 3, "output_dim": 2, "activation": "relu"},
+                                   {"input_dim": 2, "output_dim": 1, "activation": "relu"}],
+                                   lr = 0.01,
+                                   seed = 40,
+                                   batch_size = 1,
+                                   epochs = 1,
+                                   loss_function = 'mse')
+
+    # same weights, same bias
+    w1 = np.array([[1, 2, 3], [2, 3, 1]])
+    b1 = np.array([[1], [1]])
+
+    # recall your last output
+    last_lay = np.array([[9, 10], [9, 10]])
+    # and your input
+    A_prev = np.array([[1, 2, 1], [1, 2, 1]])
+
+    first_deriv = np.array([[1, 2], [1, 2]])
+    activation_ = "relu"
+
+    # testing single backprop
+    firstderiv_test, wderiv_test, biasderiv_test = nn_._single_backprop(w1, b1,
+                                                                            last_lay,
+                                                                            A_prev,
+                                                                            first_deriv,
+                                                                            activation_)
+
+    # assert the single backprop results are as expected 
+    actual_firstderiv = np.array([[5, 8, 5], [5, 8, 5]])
+    assert np.array_equal(firstderiv_test, actual_firstderiv)
+
+    actual_wderiv = np.array([[2, 4, 2], [4, 8, 4]])
+    assert np.array_equal(wderiv_test, actual_wderiv)
+    
+    actual_biasderiv = np.array([[1], [1]])
+    assert np.array_equal(biasderiv_test, actual_biasderiv)
 
 
 def test_predict():
