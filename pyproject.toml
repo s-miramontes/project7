@@ -8,6 +8,3 @@ authors = [{name = "Silvia Miramontes", email = "silvia.miramontes@ucsf.edu"}]
 readme = "README.md"
 dynamic = ["version", "description"]
 dependencies = ["numpy", "pytest"]
-
-[project.urls]
-Home = "https://www.github.com/s-miramontes/project7"
