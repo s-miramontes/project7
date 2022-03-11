@@ -42,7 +42,32 @@ def test_forward():
 
 
 def test_single_forward():
-    pass
+
+    nn_ = NeuralNetwork(nn_arch = [{"input_dim": 3, "output_dim": 2, "activation": "relu"},
+                                   {"input_dim": 2, "output_dim": 1, "activation": "relu"}],
+                                   lr = 0.01,
+                                   seed = 40,
+                                   batch_size = 1,
+                                   epochs = 1,
+                                   loss_function = 'mse')
+
+    # redefine a new input, same weights, biases as above
+    A_prev = np.array([[1, 2, 1], [1, 2, 1]])
+    w1 = np.array([[1, 2, 3], [2, 3, 1]])
+    b1 = np.array([[1], [1]])
+
+    # test a single forward pass with both sigmoid and relu
+    single_Ar, single_Zr = nn_._single_forward(w1, b1, A_prev, "relu")
+    single_As, single_Zs = nn_._single_forward(w1, b1, A_prev, "sigmoid")
+    
+    # expected results
+    actual_A_relu = np.array([[9, 10], [9, 10]])
+    actual_A_sigm = np.array([[1, 1], [1, 1]])
+
+    # make sure they are the same
+    assert np.array_equal(single_Ar, actual_A_relu)
+    # kind of cheating with round, but still 1
+    assert np.array_equal(np.round(single_As), actual_A_sigm)
 
 
 def test_single_backprop():
