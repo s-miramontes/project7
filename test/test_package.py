@@ -147,7 +147,22 @@ def test_predict():
 
 
 def test_binary_cross_entropy():
-    pass
+    """
+    Checking whether bce implementation is correct, after
+    recycling the network.
+    """
+    nn_ = NeuralNetwork(nn_arch = [{"input_dim": 3, "output_dim": 2, "activation": "relu"},
+                                   {"input_dim": 2, "output_dim": 1, "activation": "relu"}],
+                                   lr = 0.01,
+                                   seed = 40,
+                                   batch_size = 1,
+                                   epochs = 1,
+                                   loss_function = 'mse')
+
+    
+
+
+
 
 
 def test_binary_cross_entropy_backprop():
