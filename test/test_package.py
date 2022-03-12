@@ -5,10 +5,6 @@ import numpy as np
 from nn import preprocess
 from nn import NeuralNetwork
 
-# TODO: Write your test functions and associated docstrings below -- uuughh
-
-# create instance of neural network, so code isn't repeaded
-
 def test_forward():
     nn_ = NeuralNetwork(nn_arch = [{"input_dim": 3, "output_dim": 2, "activation": "relu"},
                                    {"input_dim": 2, "output_dim": 1, "activation": "relu"}],
@@ -128,57 +124,123 @@ def test_predict():
                       'b2': np.array([[1]])}
 
     # now make up a training dataset 
-    X_train = np.array([[1, 2, 3]])
-    Y_train = np.array([[1]])
+    X = np.array([[1, 2, 3]])
 
-    # now make up at val dataset, same one actually
-    X_val = np.array([[1, 2, 3]])
-    Y_val = np.array([[1]])
-
-    # use fit func
-    epochLoss_train, epochLoss_val = nn_.fit(X_train, Y_train, X_val, Y_val)
     # get predictions, since we know what to expect
-    pred = nn_.predict(X_train)
+    pred = nn_.predict(X)
 
-    actual = np.array([[0.46]])
+    actual = np.array([[55]])
+    print(pred)
 
     #rounding bc python has invisible digits
-    assert (np.array_equal(np.round(pred,1), np.round(actual, 1)))
+    assert np.array_equal(pred, actual)
 
 
 def test_binary_cross_entropy():
     """
-    Checking whether bce implementation is correct, after
-    recycling the network.
+    Checking whether bce implementation is correct, here the nn_
+    dimensions are much smaller.
+    Y and Y_pred are made up to test the accuracy of this
+    method.
     """
-    nn_ = NeuralNetwork(nn_arch = [{"input_dim": 3, "output_dim": 2, "activation": "relu"},
-                                   {"input_dim": 2, "output_dim": 1, "activation": "relu"}],
+    nn_ = NeuralNetwork(nn_arch = [{"input_dim": 3, "output_dim": 1, "activation": "relu"}],
                                    lr = 0.01,
                                    seed = 40,
                                    batch_size = 1,
                                    epochs = 1,
                                    loss_function = 'mse')
 
-    
+    # make up your own to test
+    y = np.array([0, 1, 1, 1])
+    y_pred = np.array([0.3, 0.2, 0.1, 0.4])
 
+    bce = nn_._binary_cross_entropy(y, y_pred)
 
-
+    # self-calculated, this is a horrible loss ha.
+    assert np.isclose(bce, 1.29625)
 
 
 def test_binary_cross_entropy_backprop():
-    pass
+    """
+    Testing whether binary_cross_entropy_backprop executes
+    as expected. Here the same network as above is created,
+    just for simplicity. Inputs will remain the same as 
+    above -- that is (y, and y_pred)
+    """
+    nn_ = NeuralNetwork(nn_arch = [{"input_dim": 3, "output_dim": 1, "activation": "relu"}],
+                                   lr = 0.01,
+                                   seed = 40,
+                                   batch_size = 1,
+                                   epochs = 1,
+                                   loss_function = 'mse')
+    # same as above
+    y = np.array([0, 1, 1, 1])
+    y_pred = np.array([0.3, 0.2, 0.1, 0.4])
+
+    bce_back = nn_._binary_cross_entropy_backprop(y, y_pred)
+    expected_bceb = np.array([ 0.35714286, -1.25, -2.5, -0.625])
+
+    assert np.allclose(bce_back, expected_bceb)
 
 
 def test_mean_squared_error():
-    pass
+    """
+    Testing whether the output of mse is correct. We will be
+    reusing the same network and y, y_pred here.
+    """
+    nn_ = NeuralNetwork(nn_arch = [{"input_dim": 3, "output_dim": 1, "activation": "relu"}],
+                                   lr = 0.01,
+                                   seed = 40,
+                                   batch_size = 1,
+                                   epochs = 1,
+                                   loss_function = 'mse')
+
+    # same as above
+    y = np.array([0, 1, 1, 1])
+    y_pred = np.array([0.3, 0.2, 0.1, 0.4])
+
+    mce = nn_._mean_squared_error(y, y_pred)
+    mce_actual = 0.475
+
+    assert np.isclose(mce, mce_actual)
 
 
 def test_mean_squared_error_backprop():
-    pass
+    """
+    Testing whether mse backprop works correctly. Here we again use
+    the same nn as above and inputs.
+    """
+    nn_ = NeuralNetwork(nn_arch = [{"input_dim": 3, "output_dim": 1, "activation": "relu"}],
+                                   lr = 0.01,
+                                   seed = 40,
+                                   batch_size = 1,
+                                   epochs = 1,
+                                   loss_function = 'mse')
+
+    # same as above
+    y = np.array([0, 1, 1, 1])
+    y_pred = np.array([0.3, 0.2, 0.1, 0.4])
+
+    mce_back = nn_._mean_squared_error_backprop(y, y_pred)
+    mce_back_actual = np.array([ 0.15, -0.4 , -0.45, -0.3 ])
+
+    assert np.allclose(mce_back, mce_back_actual)
 
 
 def test_one_hot_encode():
-    pass
+    """
+    Here we test whether we can one-hot-encode a sequence
+    correctly.
+    """
+
+    sequences = ["AGG", "TAC"]
+    encoded_actual = np.array([[1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1],
+                              [0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0]])
+    # perform one-hot-encode
+    encoded_test = preprocess.one_hot_encode_seqs(sequences)
+
+    # check they are equal
+    assert np.array_equal(encoded_test, encoded_actual)
 
 
 def test_sample_seqs():

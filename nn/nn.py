@@ -150,10 +150,11 @@ class NeuralNetwork:
             # define weights and biases outside of call 
             weight_curr = self._param_dict['W' + str(idxLayer)]
             bias_curr = self._param_dict['b' + str(idxLayer)]
+            activation = layer["activation"]
             
             # move forward with defined weights, biases, and A_"prev"
             A_curr, Z_curr = self._single_forward(weight_curr, bias_curr,
-                                                 A_prev, layer['activation'])
+                                                 A_prev, activation)
 
             # add A + Z to cache dict
             cache['A' + str(idxLayer)] = A_curr 
@@ -257,7 +258,7 @@ class NeuralNetwork:
             # get the transformed inputs of curr layer from cache 
             Z_curr = cache['Z' + str(idxLayer)]
             # get inputs of the prev layer from cache, not curr idx
-            A_prev = cache['A' + str(idxLayer - 1)]
+            A_prev = cache['A' + str(idxLayer)]
 
             # single backpropagation in this layer, using info above
             dA_prev, dW_curr, db_curr = self._single_backprop(weight_curr,
@@ -293,11 +294,12 @@ class NeuralNetwork:
             idxLayer = i + 1
 
             # changing weight parameters appropriately -neg lr * gradient dict value of dW and db
-            self._param_dict['W' + str(idxLayer)] = self._param_dict['W' + str(idxLayer)] - self._lr * grad_dict['dW' + str(idxLayer)]
+            #self._param_dict['W' + str(idxLayer)] = self._param_dict['W' + str(idxLayer)] - self._lr * grad_dict['dW' + str(idxLayer)]
+            self._param_dict['W' + str(idxLayer)] = self._lr * self._param_dict["W" + str(idxLayer)] - grad_dict['dW' + str(idxLayer)]
             
             # same as above, but updating biases
-            self._param_dict['b' + str(idxLayer)] = self._param_dict['b' + str(idxLayer)] - self._lr * grad_dict['db' + str(idxLayer)]
-
+            #self._param_dict['b' + str(idxLayer)] = self._param_dict['b' + str(idxLayer)] - self._lr * grad_dict['db' + str(idxLayer)]
+            self._param_dict['b' + str(idxLayer)] = self._lr * self._param_dict["b" + str(idxLayer)] - grad_dict['db' + str(idxLayer)]
         return None
 
 
@@ -330,59 +332,55 @@ class NeuralNetwork:
         per_epoch_loss_train = []
         per_epoch_loss_val = []
 
+        # get batches
+        nbatches = np.ceil(len(y_train)/ self._batch_size)
+
         # iterate num epochs of times
         for e in range(self._epochs):
 
-            # combine both X and y train to shuffle -- good practice
-            shuffle_inputs = np.concatenate([X_train, y_train], axis=1)
-            np.random.shuffle(shuffle_inputs)
+            # shuffle for each epoch
+            shuff = np.random.permutation(len(y_train))
+            shuff_Xtrain = X_train[shuff]
+            shuff_ytrain = y_train[shuff]
 
-            # X and y train redefined
-            X_train = shuffle_inputs[:, :-1]
-            y_train = shuffle_inputs[:, -1:].flatten()
-
-            # batch size relies on total inputs
-            n_batches = np.ceil(X_train.shape[0]/self._batch_size)
-            # cut off according to determined batces
-            X_batch = np.array_split(X_train, n_batches)
-            y_batch = np.array_split(y_train, n_batches)
+            # regenerate batches based on shuffling
+            Xbatch = np.array_split(shuff_Xtrain, nbatches)
+            ybatch = np.array_split(shuff_ytrain, nbatches)
 
             # now that batches are defined, iterate until epoch is done
-            # create lists to keep track of loss in train and val sets
+            # create list to keep track of loss in train 
             epoch_loss_train = []
-            epoch_loss_val = []
-            for X, y in zip(X_batch, y_batch):
+            for Xbatch, ybatch in zip(Xbatch, ybatch):
 
-                # get y_hat
-                out, cache = self.forward(X)
+                # get y_hat (forward)
+                out, cache = self.forward(Xbatch)
 
                 # done with forward, calculate loss
                 if self._loss_func == 'mse':
-                    train_loss = self._mean_squared_error(y, out)
+                    train_loss = self._mean_squared_error(ybatch, out)
                 elif self._loss_func == 'bce':
-                    train_loss = self._binary_cross_entropy(y, out)
+                    train_loss = self._binary_cross_entropy(ybatch, out)
 
                 # add to the lists in this epoch
                 epoch_loss_train.append(train_loss)
 
                 # backward pass
-                grad_dict = self.backprop(y, out, cache)
+                grad_dict = self.backprop(ybatch, out, cache)
                 self._update_params(grad_dict)
 
-                # Validation
-                out_val = self.predict(X_val)
-
-                # now validation loss
-                if self._loss_func == 'mse':
-                    val_loss = self._mean_squared_error(y_val, out_val)
-                elif self._loss_func == 'bce':
-                    val_loss = self._binary_cross_entropy(y_val, out_val)
-
-                # now add loss to the validation list
-                epoch_loss_val.append(val_loss)
-
-            # add the avg loss per epoch to the list
+            # append avg training loss after each epoch
             per_epoch_loss_train.append(np.mean(epoch_loss_train))
+
+
+            # Now validation
+            out_val = self.predict(X_val)
+            # now validation loss
+            if self._loss_func == 'mse':
+                val_loss = self._mean_squared_error(y_val, out_val)
+            elif self._loss_func == 'bce':
+                val_loss = self._binary_cross_entropy(y_val, out_val)
+
+            # add the avg val loss per epoch to the list
             per_epoch_loss_val.append(np.mean(epoch_loss_val))
 
         return per_epoch_loss_train, per_epoch_loss_val
@@ -504,7 +502,7 @@ class NeuralNetwork:
                 Average loss over mini-batch.
         """
         # loss function
-        loss = -np.mean((y * np.log(y_hat)) + ((1 - y) * (np.log(1 - y_hat))))
+        loss = -np.mean(y * np.log(y_hat) + (1 - y) * np.log(1 - y_hat))
 
         return loss
 
@@ -548,7 +546,7 @@ class NeuralNetwork:
 
         # mse: (observed - predicted)**squared
         # and avg
-        loss = np.mean((y - y_hat) ** 2)
+        loss = np.mean(np.square(y - y_hat))
 
         return loss
 
@@ -568,9 +566,8 @@ class NeuralNetwork:
                 partial derivative of loss with respect to A matrix.
         """
         
-        y_length = y.shape[0]
         # derivative
-        dA = 2 * (y_hat - y) / y_length
+        dA = (2 * (y_hat - y)) / len(y)
 
         return dA
 
